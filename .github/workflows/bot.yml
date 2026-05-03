@@ -1,0 +1,55 @@
+name: Pinterest Bot
+
+on:
+  schedule:
+    # Runs every 5 minutes
+    - cron: "*/5 * * * *"
+  # Also allows you to trigger manually from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: write  # needed to commit state files back to repo
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browser
+        run: playwright install chromium --with-deps
+
+      - name: Run bot
+        env:
+          PINTEREST_EMAIL: ${{ secrets.PINTEREST_EMAIL }}
+          PINTEREST_PASSWORD: ${{ secrets.PINTEREST_PASSWORD }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python main.py
+
+      - name: Commit updated state files
+        run: |
+          git config user.name "pinterest-bot[bot]"
+          git config user.email "pinterest-bot@noreply.github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "bot: state update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push

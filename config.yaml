@@ -1,0 +1,23 @@
+# List of Pinterest sources to scrape from (mix of profiles and searches)
+source_urls: 
+  - "https://www.pinterest.com/animewallpapers233/_saved/"
+  - "https://www.pinterest.com/search/pins/?q=popular%20anime%20wallpapers"
+  - "https://www.pinterest.com/search/pins/?q=popular%20anime%20aesthetic"
+  - "https://www.pinterest.com/search/pins/?q=anime%20icons"
+
+# Your Pinterest board where pins will be posted
+target_board_name: "your-board-name"
+
+# GitHub Actions can run max every 5 mins. 
+# We run every 5 mins and post 1 pin.
+pins_per_run: 1
+
+# ~60 seconds delay between each post = 1 post per minute
+delay_min_seconds: 55
+delay_max_seconds: 65
+
+max_retries: 3
+
+# How many pins to scrape PER CHANNEL when the queue is low
+# 100 pins * 10 channels = 1000 pins loaded into the queue at a time
+scrape_limit: 100
